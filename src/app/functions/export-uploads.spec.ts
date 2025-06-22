@@ -24,20 +24,20 @@ describe("export uploads", () => {
 
     const sut = await exportUploads({ searchQuery: namePattern });
 
-    const generateCSVStrem = uploadStub.mock.calls[0][0].contentStream;
+    const generatedCSVStream = uploadStub.mock.calls[0][0].contentStream;
 
     const csvAsString = await new Promise<string>((resolve, reject) => {
       const chunks: Buffer[] = [];
 
-      generateCSVStrem.on("data", (chunk) => {
+      generatedCSVStream.on("data", (chunk) => {
         chunks.push(chunk);
       });
 
-      generateCSVStrem.on("end", () => {
+      generatedCSVStream.on("end", () => {
         resolve(Buffer.concat(chunks).toString("utf-8"));
       });
 
-      generateCSVStrem.on("error", (error) => {
+      generatedCSVStream.on("error", (error) => {
         reject(error);
       });
     });
@@ -48,7 +48,7 @@ describe("export uploads", () => {
       .map((row) => row.split(","));
 
     expect(isRight(sut)).toBe(true);
-    expect(unwrapEither(sut)).toEqual({ reportUrl: "https://test.com/file.csv" });
+    expect(unwrapEither(sut).reportUrl).toBe("https://test.com/file.csv");
     expect(csvAsArray).toEqual([
       ["ID", "Name", "URL", "Created At"],
       [upload1.id, upload1.name, upload1.remoteUrl, expect.any(String)],
